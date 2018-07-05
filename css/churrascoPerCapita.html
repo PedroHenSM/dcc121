@@ -18,7 +18,7 @@
         </style>
     </head>
     <body>
-        <div><label>Nome: <input type="text" name="nome" id="txt" placeholder="Insira o Nome"required/> </label></div>
+        <div><label>Nome: <input type="text" name="nome" id="txt" placeholder="Insira o nome"required/> </label></div>
         <div><button> Adicionar</button> </div>
 
         <ul id="lista">
@@ -29,8 +29,8 @@
 
         <form name="dados">
             <input type="hidden" name="posicao" value=""/>
-            <div><label>Produto: <input type="text" name="nome" required/></label></div>
-            <div><label>Preco: <input type="number" name="p" required/></label></div>
+            <div><label>Produto: <input type="text" name="nome" placeholder="Insira o produto"required/></label></div>
+            <div><label>Preco: <input type="number" name="p" placeholder="Insira o preço" required/></label></div>
             <div><input type="submit"  id="b1" value="Custo Fixo" name="botao1"/></div>
             <div><input type="submit"  id="b2" value="Custo Per Capita" name="botao2" /></div>
         </form>
@@ -46,7 +46,7 @@
           </thead>
         <tbody></tbody>
 
-        <table border="3">
+        <table border="1">
             <caption>Custos Per Capita</caption>
           <thead>
             <tr>
@@ -59,12 +59,63 @@
 
         </table>
 
-        <p>O valor para cada um: <span id="valorIndividual"> 0 </span> </p>
+        <p>O valor para cada um: R$<span id="valorIndividual"> 0 </span> </p>
 
 
 
         <script>
-            var coisas = [ {prod:"Picanha", prec: 50},{prod:"Alcool", prec: 10}];
+        // Listas Pessoas
+        var botaoAdicionar = document.querySelector("button");
+        var listaPessoas = document.querySelector("ul");
+        var pessoas = document.querySelectorAll ("#lista li");
+        var vet = [], indice;
+        botaoAdicionar.addEventListener("click",adicionaPessoa);
+        function adicionaPessoa(){
+            var entradaNome = document.getElementById("txt");
+            var nomePessoa = entradaNome.value;
+            if(nomePessoa != ""){
+                console.log(nomePessoa);
+                entradaNome.value = "";
+                entradaNome.focus();
+                var novoLi = document.createElement("li");
+                var spanDelete = document.createElement("span");
+                spanDelete.innerHTML = "&#x2717;"
+                novoLi.textContent = nomePessoa;
+                novoLi.appendChild(spanDelete);
+                console.log(novoLi);
+                listaPessoas.appendChild(novoLi);
+                limpaVetor(); // Arruma indices
+                spanDelete.onclick = function(){
+                    indice = vet.indexOf(novoLi.innerHTML);
+                    nomePessoa = novoLi.innerHTML;
+                    pessoas[indice].parentNode.removeChild(pessoas[indice]);
+                    nomePessoa.value="";
+                    limpaVetor();
+                    console.log("Num de pessoas: " + pessoas.length)
+                    valorFinal = document.getElementById("valorIndividual");
+                    if(pessoas.length == 0){
+                        valorFinal.textContent =  (totalCustoFixo + totalCustoPerCapita).toFixed(2);
+                    }
+                    else{
+                        valorFinal.textContent =  (totalCustoFixo/pessoas.length + totalCustoPerCapita).toFixed(2);
+                    }
+                }
+                console.log("Num de pessoas: " + pessoas.length)
+            }
+            valorFinal = document.getElementById("valorIndividual");
+            valorFinal.textContent =  (totalCustoFixo/pessoas.length + totalCustoPerCapita).toFixed(2);
+        }
+
+        function limpaVetor(){
+            vet.length = 0;
+            pessoas = document.querySelectorAll ("#lista li");
+            for (var i = 0; i < pessoas.length; i++){
+                vet.push(pessoas[i].innerHTML);
+            }
+        }
+
+
+            var informacoesDoProduto = [ {produto:" " , preco: 0 }, {produto: "", preco: 0}];
             var totalCustoFixo = 0;
             var totalCustoPerCapita = 0;
             var valorFinal = 0;
@@ -73,10 +124,10 @@
                 tbodyFixo = tbodies[0];
                 tbodyFixo.innerHTML ="";
                 totalCustoFixo = 0;
-                for(var i = 0;i<coisas.length;i++){
-                    var peca = coisas[i];
-
-                    if (peca.prod != "" && peca.prec != ""){
+                for(var i = 0;i<informacoesDoProduto.length;i++){
+                    var item = informacoesDoProduto[i];
+                    console.log("pessoas.length ao adicionar ao custo fixo: " + pessoas.length);
+                    if (item.produto != "" && item.preco != "" && pessoas.length != 0){
                         var tr = document.createElement("tr");
                         tbodyFixo.appendChild(tr);
 
@@ -89,7 +140,7 @@
                         spanDeleteCustoF.addEventListener('click',(function (x){
                             return function() {
                                 console.log("Lixo clicado: "+x);
-                                coisas.splice(x, 1);
+                                informacoesDoProduto.splice(x, 1);
                                 limpaFormulario();
                                 apresentaDados();
                             }
@@ -97,22 +148,24 @@
 
 
                         var tdNomeP = document.createElement("td");
-                        tdNomeP.textContent = peca.prod;
+                        tdNomeP.textContent = item.produto;
                         tr.appendChild(tdNomeP);
 
                         var tdPrecoP = document.createElement("td");
-                        tdPrecoP.textContent = peca.prec;
+                        tdPrecoP.textContent = item.preco;
                         tr.appendChild(tdPrecoP);
-                        console.log("Coisas: " + peca.prec);
-                        totalCustoFixo += Number(peca.prec);
-                        //console.log("Total Custo Fixo: " + totalCustoFixo);
+                        console.log("informacoesDoProduto: " + item.preco);
+                        totalCustoFixo += Number(item.preco);
                     }
                 }
                 valorFinal = document.getElementById("valorIndividual");
-                valorFinal.textContent =  totalCustoFixo/items.length + totalCustoPerCapita;
+                if(pessoas.length != 0){
+                    valorFinal.textContent =  (totalCustoFixo/pessoas.length + totalCustoPerCapita).toFixed(2);
+                }
+                else{
+                    valorFinal.textContent = 0;
+                }
             }
-            //console.log("Total Custo Fixo: " + totalCustoFixo);
-
             function limpaFormulario(){
                 document.dados.reset();
                 document.dados.posicao.value ="";
@@ -121,24 +174,28 @@
             }
 
             function criaProduto(){
-                var posicao = document.dados.posicao.value;
-                var name = document.dados.nome.value;
-                var price = document.dados.p.value;
-                limpaFormulario();
-                var peca = {prod: name, prec: price}
-                coisas.push(peca);
-                apresentaDados();
+                if( pessoas.length != 0){
+                    var posicao = document.dados.posicao.value;
+                    var name = document.dados.nome.value;
+                    var price = document.dados.p.value;
+                    limpaFormulario();
+                    var item = {produto: name, preco: price}
+                    informacoesDoProduto.push(item);
+                    apresentaDados();
+                }
 
             }
 
             function salvaProduto(){
-                var posicao = document.dados.posicao.value;
-                var name = document.dados.nome.value;
-                var price = document.dados.p.value;
-                limpaFormulario();
-                var peca = {prod: name, prec: price};
-                coisas[posicao] = peca;
-                apresentaDados();
+                if( pessoas.length != 0){
+                    var posicao = document.dados.posicao.value;
+                    var name = document.dados.nome.value;
+                    var price = document.dados.p.value;
+                    limpaFormulario();
+                    var item = {produto: name, preco: price};
+                    informacoesDoProduto[posicao] = item;
+                    apresentaDados();
+                }
 
             }
             //document.dados.addEventListener("submit",enviaFormulario);
@@ -156,61 +213,17 @@
 
 
 
-            // Listas Pesosoas
-            var botaoAdicionar = document.querySelector("button");
-            var listaPessoas = document.querySelector("ul");
-            var items = document.querySelectorAll ("#lista li");
-            var tab = [], index;
-            botaoAdicionar.addEventListener("click",adicionaPessoa);
-            function adicionaPessoa(){
-                var entradaNome = document.getElementById("txt");
-                var nomePessoa = entradaNome.value;
-                if(nomePessoa != ""){
-                    console.log(nomePessoa);
-                    entradaNome.value = "";
-                    entradaNome.focus();
-                    var novoLi = document.createElement("li");
-                    var spanDelete = document.createElement("span");
-                    spanDelete.innerHTML = "&#x2717;"
-                    novoLi.textContent = nomePessoa;
-                    novoLi.appendChild(spanDelete);
-                    console.log(novoLi);
-                    listaPessoas.appendChild(novoLi);
-                    limpaVetor(); // Arruma indices
-                    spanDelete.onclick = function(){
-                        index = tab.indexOf(novoLi.innerHTML);
-                        console.log(novoLi.innerHTML + " INDEX = " + index);
-                        nomePessoa = novoLi.innerHTML;
-                        items[index].parentNode.removeChild(items[index]);
-                        nomePessoa.value="";
-                        limpaVetor();
-                        console.log("Num de pessoas: " + items.length)
-                    }
-                    console.log("Num de pessoas: " + items.length)
-                }
-                valorFinal = document.getElementById("valorIndividual");
-                valorFinal.textContent =  totalCustoFixo/items.length + totalCustoPerCapita;
-            }
-
-            function limpaVetor(){
-                tab.length = 0;
-                items = document.querySelectorAll ("#lista li");
-                for (var i = 0; i < items.length; i++){
-                    tab.push(items[i].innerHTML);
-                }
-            }
-
 
             //Codigo que teoricamente adiciona em custo perCapit.
-            var coisas1 = [ {prod:"Maminha", prec: 30},{prod:"Gasosa", prec: 15}];
+            var informacoesDoProduto1 = [ {produto:"", preco: 0},{produto:"", preco: 0}];
             function apresentaDados1(){
                 var tbodies = document.querySelectorAll("tbody");
                 tbodyPerCapita = tbodies[1];
                 tbodyPerCapita.innerHTML = "";
                 totalCustoPerCapita = 0;
-                    for(var i = 0;i<coisas1.length;i++){
-                        var peca = coisas1[i];
-                            if(peca.prod != "" && peca.prec != ""){
+                    for(var i = 0;i<informacoesDoProduto1.length;i++){
+                        var item = informacoesDoProduto1[i];
+                            if(item.produto != "" && item.preco != "" && pessoas.length != 0){
                                 var tr = document.createElement("tr");
                                 tbodyPerCapita.appendChild(tr);
 
@@ -223,24 +236,29 @@
                                 spanDeletePerCapita.addEventListener('click',(function (x){
                                     return function() {
                                         console.log("Lixo clicado: "+x);
-                                        coisas1.splice(x, 1);
+                                        informacoesDoProduto1.splice(x, 1);
                                         limpaFormulario();
                                         apresentaDados1();
                                     }
                                 })(i));
 
                                 var tdNomeP = document.createElement("td");
-                                tdNomeP.textContent = peca.prod;
+                                tdNomeP.textContent = item.produto;
                                 tr.appendChild(tdNomeP);
 
                                 var tdPrecoP = document.createElement("td");
-                                tdPrecoP.textContent = peca.prec;
+                                tdPrecoP.textContent = item.preco;
                                 tr.appendChild(tdPrecoP);
                             }
-                            totalCustoPerCapita+= Number(peca.prec);
+                            totalCustoPerCapita+= Number(item.preco);
                     }
                     valorFinal = document.getElementById("valorIndividual");
-                    valorFinal.textContent =  totalCustoFixo/items.length + totalCustoPerCapita;
+                    if(pessoas.length != 0){
+                        valorFinal.textContent =  (totalCustoFixo/pessoas.length + totalCustoPerCapita).toFixed(2);
+                    }
+                    else{
+                        valorFinal.textContent = 0;
+                    }
             }
 
             document.getElementById("b2").addEventListener("click",enviaFormularioPerCapita);
@@ -255,33 +273,30 @@
             }
 
             function criaProduto1(){
-                var posicao = document.dados.posicao.value;
-                var name = document.dados.nome.value;
-                var price = document.dados.p.value;
-                limpaFormulario();
-                var peca = {prod: name, prec: price}
-                coisas1.push(peca);
-                apresentaDados1();
+                if( pessoas.length != 0){
+                    var posicao = document.dados.posicao.value;
+                    var name = document.dados.nome.value;
+                    var price = document.dados.p.value;
+                    limpaFormulario();
+                    var item = {produto: name, preco: price}
+                    informacoesDoProduto1.push(item);
+                    apresentaDados1();
+                }
 
             }
 
             function salvaProduto1(){
-                var posicao = document.dados.posicao.value;
-                var name = document.dados.nome.value;
-                var price = document.dados.p.value;
-                limpaFormulario();
-                var peca = {prod: name, prec: price};
-                coisas1[posicao] = peca;
-                apresentaDados1();
+                if( pessoas.length != 0){
+                    var posicao = document.dados.posicao.value;
+                    var name = document.dados.nome.value;
+                    var price = document.dados.p.value;
+                    limpaFormulario();
+                    var item = {produto: name, preco: price};
+                    informacoesDoProduto1[posicao] = item;
+                    apresentaDados1();
+                }
 
             }
-
-
-
-            /// Contas
-            console.log("Num de pessoas: " + items.length)
-            console.log("O valor para pessoa: " + items.length/totalCustoFixo + totalCustoPerCapita);
-
         </script>
     </body>
 
